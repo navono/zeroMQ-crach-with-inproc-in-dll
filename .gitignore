@@ -1,0 +1,8 @@
+out
+build
+.vscode
+.idea
+*.exe
+*.dll
+*.o
+*.a
