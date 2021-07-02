@@ -15,7 +15,8 @@
 void PublisherThread(zmq::context_t *ctx) {
   //  Prepare publisher
   zmq::socket_t publisher(*ctx, zmq::socket_type::pub);
-  publisher.bind("inproc://#1");
+  //  publisher.bind("inproc://#1");
+  publisher.bind("tcp://*:5556");
 
   // Give the subscribers a chance to connect, so they don't lose any messages
   std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -91,7 +92,7 @@ int main() {
    *
    * Source: http://api.zeromq.org/4-3:zmq-inproc
    */
-  zmq::context_t ctx(0);
+  zmq::context_t ctx(1);
 
   auto thread1 = std::async(std::launch::async, PublisherThread, &ctx);
 

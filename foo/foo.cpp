@@ -22,9 +22,11 @@ void foo::subscribe() {
 // void foo::stop() { exitSignal_.set_value(); }
 
 void foo::subscriberThread1() {
+  zmq::context_t ctx(1);
   //  Prepare subscriber
-  zmq::socket_t subscriber(*ctx_, zmq::socket_type::sub);
-  subscriber.connect("inproc://#1");
+  zmq::socket_t subscriber(ctx, zmq::socket_type::sub);
+  //  subscriber.connect("inproc://#1");
+  subscriber.connect("tcp://localhost:5556");
 
   //  Thread2 opens "A" and "B" envelopes
   subscriber.set(zmq::sockopt::subscribe, "A");
@@ -50,6 +52,8 @@ void foo::subscriberThread1() {
     }
   }
 
+  subscriber.close();
+  ctx.shutdown();
   LOG_INFO(logger_, "exit subscriber thread");
 }
 
