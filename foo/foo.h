@@ -12,11 +12,10 @@
 
 class foo : public IModule {
 public:
-  explicit foo(std::shared_ptr<zmq::context_t> ctx);
+  explicit foo(zmq::context_t *ctx);
   ~foo() override;
 
-  void hello() override;
-  void stop() override;
+  void subscribe() override;
 
 private:
   void subscriberThread1();
@@ -25,5 +24,6 @@ private:
   std::shared_ptr<quill::Logger> logger_;
   std::promise<void> exitSignal_;
 
-  std::shared_ptr<zmq::context_t> ctx_;
+  //  std::shared_ptr<zmq::context_t> ctx_;
+  zmq::context_t *ctx_;
 };

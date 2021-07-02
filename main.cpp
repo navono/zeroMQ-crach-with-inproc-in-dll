@@ -1,9 +1,16 @@
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 #include <future>
 #include <iostream>
 #include <string>
 
 #include "zmq.hpp"
 #include "zmq_addon.hpp"
+
+#include "dynalo/dynalo.hpp"
+#include "interface.h"
 
 void PublisherThread(zmq::context_t *ctx) {
   //  Prepare publisher
@@ -91,11 +98,21 @@ int main() {
   // Give the publisher a chance to bind, since inproc requires it
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-  auto thread2 = std::async(std::launch::async, SubscriberThread1, &ctx);
-  //    auto thread3 = std::async(std::launch::async, SubscriberThread2, &ctx);
+  //  auto thread2 = std::async(std::launch::async, SubscriberThread1, &ctx);
+  //  auto thread3 = std::async(std::launch::async, SubscriberThread2, &ctx);
+
+  dynalo::library lib("./foo.dll");
+  auto pfnCreateFoo =
+      lib.get_function<IModule *(zmq::context_t * ctx)>("CreateFoo");
+  if (pfnCreateFoo) {
+    auto f = pfnCreateFoo(&ctx);
+    auto thread2 = std::async(std::launch::async, [&f]() { f->subscribe(); });
+    thread2.wait();
+  }
+
   thread1.wait();
-  thread2.wait();
-  //    thread3.wait();
+  //  thread2.wait();
+  //  thread3.wait();
 
   /*
    * Output:

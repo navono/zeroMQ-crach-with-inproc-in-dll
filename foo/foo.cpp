@@ -9,41 +9,22 @@
 
 using namespace std;
 
-foo::foo(std::shared_ptr<zmq::context_t> ctx) : ctx_(ctx) {
-  logger_ = initLogger("foo");
-};
+foo::foo(zmq::context_t *ctx) : ctx_(ctx) { logger_ = initLogger("foo"); };
 
 foo::~foo() = default;
 
-void foo::hello() {
-  LOG_INFO(logger_, "hello from foo.dll");
+void foo::subscribe() {
+  LOG_INFO(logger_, "subscribe from foo.dll");
 
-  //  folly::CPUThreadPoolExecutor executor{4};
-  //  auto fut = folly::makeFuture(true);
-  //  auto exeFut = std::move(fut).via(&executor);
-  //  std::move(exeFut).thenValue([&](bool b) { subscriberThread1(); });
-
-  auto executor = std::make_unique<folly::CPUThreadPoolExecutor>(4);
-  auto fut = folly::makeFuture(true);
-  auto exeFut = std::move(fut).via(executor.get());
-  std::move(exeFut).thenValue([&](bool b) { subscriberThread1(); });
-
-  //  auto fut = folly::makeFuture(true);
-  //  auto exeFut = std::move(fut).via(executor.get());
-  //  std::move(exeFut).thenValue([&](bool b) { publisherThread(zmqCtx.get());
-  //  });
+  subscriberThread1();
 }
 
-void foo::stop() { exitSignal_.set_value(); }
+// void foo::stop() { exitSignal_.set_value(); }
 
 void foo::subscriberThread1() {
-  //  auto zmqCtx = std::make_shared<zmq::context_t>(0);
-  //  zmq::socket_t subscriber(*zmqCtx, zmq::socket_type::sub);
-
   //  Prepare subscriber
   zmq::socket_t subscriber(*ctx_, zmq::socket_type::sub);
   subscriber.connect("inproc://#1");
-  //  subscriber.connect("tcp://localhost:5556");
 
   //  Thread2 opens "A" and "B" envelopes
   subscriber.set(zmq::sockopt::subscribe, "A");
@@ -87,6 +68,4 @@ void foo::subscriberThread1() {
   LOG_INFO(logger_, "exit subscriber thread");
 }
 
-IModule *DYNALO_CALL CreateFoo(std::shared_ptr<zmq::context_t> ctx) {
-  return new foo(ctx);
-}
+IModule *DYNALO_CALL CreateFoo(zmq::context_t *ctx) { return new foo(ctx); }
